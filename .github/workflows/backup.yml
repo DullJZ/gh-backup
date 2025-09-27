@@ -32,10 +32,7 @@ jobs:
 
     - name: Clone all GitHub repositories
       run: |
-        # 使用 ghorg 克隆所有仓库，忽略错误继续执行
-        mkdir -p github-repos
-        cd github-repos
-        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=/tmp/repos || echo "Warning: ghorg clone failed, continuing anyway..."
+        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=repos || echo "Warning: ghorg clone failed, continuing anyway..."
 
     - name: Backup to Gitea
       if: env.BACKUP_GITEA == 'true'
@@ -46,7 +43,7 @@ jobs:
         GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
         GITEA_OWNER: ${{ secrets.GITEA_OWNER }}
         VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
-        BASE_DIR: "/tmp/repos"
+        BASE_DIR: "$HOME/ghorg/repos"
 
     - name: Backup to GitLab
       if: env.BACKUP_GITLAB == 'true'
@@ -57,7 +54,7 @@ jobs:
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         GITLAB_OWNER: ${{ secrets.GITLAB_OWNER }}
         VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
-        BASE_DIR: "/tmp/repos"
+        BASE_DIR: "$HOME/ghorg/repos"
 
     - name: Notify completion
       run: |
