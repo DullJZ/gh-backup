@@ -24,26 +24,24 @@
 - GitLab 访问令牌（需要有创建项目、读写权限）
 - 目标群组或用户名
 
-### 2. 配置 GitHub Secrets和环境变量
+### 2. 配置 GitHub Secrets
 
-在 GitHub 仓库设置中，添加以下环境变量：
+在 GitHub 仓库设置中，添加以下 Secrets：
 
 #### 基础配置：
 - `BACKUP_GITEA`: `true` 或 `false`
 - `BACKUP_GITLAB`: `true` 或 `false`
 - `VISIBILITY`: `public` 或 `private`
 
-在 Github 仓库设置中，添加以下 Secrets：
-
 #### Gitea 配置：
-- `GITEA_URL`: Gitea 服务器地址，如 `https://git.example.com`
+- `GITEA_HOST`: Gitea 服务器主机名，如 `git.example.com`
 - `GITEA_TOKEN`: Gitea 访问令牌
 - `GITEA_OWNER`: 目标组织或用户名
 
 #### GitLab 配置：
-- `GITLAB_URL`: GitLab 服务器地址
+- `GITLAB_HOST`: GitLab 服务器主机名，如 `gitlab.com`
 - `GITLAB_TOKEN`: GitLab 访问令牌
-- `GITLAB_NAMESPACE`: 目标群组或用户名
+- `GITLAB_OWNER`: 目标群组或用户名
 
 ### 3. 手动测试运行
 
@@ -68,11 +66,11 @@ schedule:
 
 ### 备份到 Gitea
 
-设置 GitHub ENV：`BACKUP_GITEA=true`
+设置 GitHub Secrets：`BACKUP_GITEA=true`
 
 ### 备份到 GitLab
 
-设置 GitHub ENV：`BACKUP_GITLAB=true`
+设置 GitHub Secrets：`BACKUP_GITLAB=true`
 
 ## 注意事项
 

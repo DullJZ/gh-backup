@@ -4,10 +4,10 @@ set -e  # 碰到错误中止脚本执行
 set -o pipefail  # 捕获管道中的错误
 
 # 从环境变量读取配置
-GITEA_URL="${GITEA_URL:-https://your-gitea.example.com}"
+GITEA_HOST="${GITEA_HOST:-gitea.example.com}"
 GITEA_TOKEN="${GITEA_TOKEN:-YOUR_GITEA_TOKEN}"
 GITEA_OWNER="${GITEA_OWNER:-your-gitea-username}"  # 设置目标组织名或用户名
-VISIBILITY="${VISIBILITY:-public}"        # 可改成 private
+VISIBILITY="${VISIBILITY:-private}"
 
 BASE_DIR="${BASE_DIR:-/root/ghorg/repos}"  # 克隆的本地仓库目录
 
@@ -27,12 +27,12 @@ for repo in "${BASE_DIR}"/*/; do
   # 创建 Gitea 远程仓库
   echo "Creating repository $repo_name on Gitea..."
   create_repo_response=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X POST "$GITEA_URL/api/v1/orgs/$GITEA_OWNER/repos" \
-    -H "Authorization: token $GITEA_TOKEN" \
+    -X POST "https://${GITEA_HOST}/api/v1/orgs/${GITEA_OWNER}/repos" \
+    -H "Authorization: token ${GITEA_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{
-          \"name\": \"$repo_name\",
-          \"private\": $( [[ "$VISIBILITY" == "private" ]] && echo true || echo false ),
+          \"name\": \"${repo_name}\",
+          \"private\": $( [[ "${VISIBILITY}" == "private" ]] && echo true || echo false ),
           \"autoinit\": false
         }")
 
@@ -46,13 +46,14 @@ for repo in "${BASE_DIR}"/*/; do
     echo "✅ Repository $repo_name successfully created on Gitea."
   fi
 
-  # 检查是否已存在 'gitea' 远程
+  # 设置带 token 的远程地址，避免每次推送都输入用户名密码
+  git_url="https://${GITEA_OWNER}:${GITEA_TOKEN}@${GITEA_HOST}/${GITEA_OWNER}/${repo_name}.git"
   if git remote | grep -q "^gitea$"; then
     echo "Updating remote 'gitea' for $repo_name."
-    git remote set-url gitea "$GITEA_URL/$GITEA_OWNER/$repo_name.git"
+    git remote set-url gitea "$git_url"
   else
     echo "Adding remote 'gitea' for $repo_name."
-    git remote add gitea "$GITEA_URL/$GITEA_OWNER/$repo_name.git"
+    git remote add gitea "$git_url"
   fi
 
   # 推送所有分支和标签到 Gitea

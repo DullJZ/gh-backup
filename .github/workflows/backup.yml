@@ -9,6 +9,9 @@ on:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    env:
+      BACKUP_GITEA: ${{ secrets.BACKUP_GITEA }}
+      BACKUP_GITLAB: ${{ secrets.BACKUP_GITLAB }}
 
     steps:
     - name: Checkout repository
@@ -32,29 +35,29 @@ jobs:
         # 使用 ghorg 克隆所有仓库
         mkdir -p github-repos
         cd github-repos
-        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=repos
+        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=/tmp/repos
 
     - name: Backup to Gitea
       if: env.BACKUP_GITEA == 'true'
       run: |
         ../backup-to-gitea.sh
       env:
-        GITEA_URL: ${{ secrets.GITEA_URL }}
+        GITEA_HOST: ${{ secrets.GITEA_HOST }}
         GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
         GITEA_OWNER: ${{ secrets.GITEA_OWNER }}
-        VISIBILITY: ${{ secrets.VISIBILITY || 'public' }}
-        BASE_DIR: "${{ github.workspace }}/github-repos/repos"
+        VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
+        BASE_DIR: "/tmp/repos"
 
     - name: Backup to GitLab
       if: env.BACKUP_GITLAB == 'true'
       run: |
         ../backup-to-gitlab.sh
       env:
-        GITLAB_URL: ${{ secrets.GITLAB_URL }}
+        GITLAB_HOST: ${{ secrets.GITLAB_HOST }}
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-        GITLAB_NAMESPACE: ${{ secrets.GITLAB_NAMESPACE }}
-        VISIBILITY: ${{ secrets.VISIBILITY || 'public' }}
-        BASE_DIR: "${{ github.workspace }}/github-repos/repos"
+        GITLAB_OWNER: ${{ secrets.GITLAB_OWNER }}
+        VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
+        BASE_DIR: "/tmp/repos"
 
     - name: Notify completion
       run: |
