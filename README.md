@@ -33,6 +33,9 @@
 - `BACKUP_GITLAB`: `true` 或 `false`
 - `VISIBILITY`: `public` 或 `private`
 
+#### Github 配置：
+- `CUSTOM_GITHUB_TOKEN`: GitHub 访问令牌（需要有repo权限）
+
 #### Gitea 配置：
 - `GITEA_HOST`: Gitea 服务器主机名，如 `git.example.com`
 - `GITEA_TOKEN`: Gitea 访问令牌

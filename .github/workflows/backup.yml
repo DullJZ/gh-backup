@@ -12,6 +12,7 @@ jobs:
     env:
       BACKUP_GITEA: ${{ secrets.BACKUP_GITEA }}
       BACKUP_GITLAB: ${{ secrets.BACKUP_GITLAB }}
+      CUSTOM_GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
@@ -30,9 +31,15 @@ jobs:
         git config --global user.email "github-actions@github.com"
         git config --global user.name "GitHub Actions"
 
-    - name: Clone all GitHub repositories
+    - name: Clone all GitHub repositories with action's token
+      if: ${{ env.CUSTOM_GITHUB_TOKEN == '' }}
       run: |
         ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=repos || echo "Warning: ghorg clone failed, continuing anyway..."
+
+    - name: Clone all GitHub repositories with custom token
+      if: ${{ env.CUSTOM_GITHUB_TOKEN != '' }}
+      run: |
+        ghorg clone ${{ github.repository_owner }} --token=${{ env.CUSTOM_GITHUB_TOKEN }} --clone-type=user --output-dir=repos || echo "Warning: ghorg clone failed, continuing anyway..."
 
     - name: Backup to Gitea
       if: env.BACKUP_GITEA == 'true'
