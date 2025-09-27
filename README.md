@@ -14,6 +14,11 @@
 
 ### 1. 准备工作
 
+#### Github 备份配置：
+- （可选）自定义 GitHub 访问令牌（需要有repo权限）
+
+如果不设置，脚本将使用 GitHub Actions 默认的 `GITHUB_TOKEN`。但是经过测试，默认令牌获取到的仓库数量有限（40个），建议创建一个新的个人访问令牌。
+
 #### Gitea 备份配置：
 - Gitea 服务器地址
 - Gitea 访问令牌（需要有repo、user权限）
@@ -34,7 +39,7 @@
 - `VISIBILITY`: `public` 或 `private`
 
 #### Github 配置：
-- `CUSTOM_GITHUB_TOKEN`: GitHub 访问令牌（需要有repo权限）
+- `CUSTOM_GITHUB_TOKEN`: GitHub 访问令牌（需要有repo权限）（可选）
 
 #### Gitea 配置：
 - `GITEA_HOST`: Gitea 服务器主机名，如 `git.example.com`
