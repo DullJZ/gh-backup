@@ -32,10 +32,10 @@ jobs:
 
     - name: Clone all GitHub repositories
       run: |
-        # 使用 ghorg 克隆所有仓库
+        # 使用 ghorg 克隆所有仓库，忽略错误继续执行
         mkdir -p github-repos
         cd github-repos
-        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=/tmp/repos
+        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=/tmp/repos || echo "Warning: ghorg clone failed, continuing anyway..."
 
     - name: Backup to Gitea
       if: env.BACKUP_GITEA == 'true'
