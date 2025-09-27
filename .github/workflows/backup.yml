@@ -1,0 +1,61 @@
+name: Backup GitHub to Gitea/GitLab
+
+on:
+  schedule:
+    # 每天凌晨 2 点运行
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Setup ghorg
+      run: |
+        # 安装 ghorg
+        wget https://github.com/gabrie30/ghorg/releases/download/v1.11.4/ghorg_1.11.4_Linux_x86_64.tar.gz -O ghorg.tar.gz
+        tar -xzf ghorg.tar.gz
+        chmod +x ghorg
+        sudo mv ghorg /usr/local/bin/
+
+    - name: Configure git
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "GitHub Actions"
+
+    - name: Clone all GitHub repositories
+      run: |
+        # 使用 ghorg 克隆所有仓库
+        mkdir -p github-repos
+        cd github-repos
+        ghorg clone ${{ github.repository_owner }} --token=${{ secrets.GITHUB_TOKEN }} --clone-type=user --output-dir=repos
+
+    - name: Backup to Gitea
+      if: env.BACKUP_GITEA == 'true'
+      run: |
+        ../backup-to-gitea.sh
+      env:
+        GITEA_URL: ${{ secrets.GITEA_URL }}
+        GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+        GITEA_OWNER: ${{ secrets.GITEA_OWNER }}
+        VISIBILITY: ${{ secrets.VISIBILITY || 'public' }}
+        BASE_DIR: "${{ github.workspace }}/github-repos/repos"
+
+    - name: Backup to GitLab
+      if: env.BACKUP_GITLAB == 'true'
+      run: |
+        ../backup-to-gitlab.sh
+      env:
+        GITLAB_URL: ${{ secrets.GITLAB_URL }}
+        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        GITLAB_NAMESPACE: ${{ secrets.GITLAB_NAMESPACE }}
+        VISIBILITY: ${{ secrets.VISIBILITY || 'public' }}
+        BASE_DIR: "${{ github.workspace }}/github-repos/repos"
+
+    - name: Notify completion
+      run: |
+        echo "✅ GitHub backup completed successfully!"
