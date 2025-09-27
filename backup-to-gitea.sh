@@ -12,7 +12,7 @@ VISIBILITY="${VISIBILITY:-private}"
 BASE_DIR="${BASE_DIR:-/root/ghorg/repos}"  # 克隆的本地仓库目录
 
 # 遍历克隆目录下的每个子目录
-for repo in "${BASE_DIR}"/*/; do
+for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
   repo_name=$(basename "$repo")  # 获取仓库目录名作为仓库名称
   echo "=====> Processing repository: $repo_name"
 

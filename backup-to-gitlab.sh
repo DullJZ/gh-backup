@@ -11,7 +11,7 @@ VISIBILITY="${VISIBILITY:-private}"
 
 BASE_DIR="${BASE_DIR:-/root/ghorg/repos}"
 
-for repo in "${BASE_DIR}"/*/; do
+for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
   repo_name=$(basename "$repo")
   echo "=====> Processing repository: $repo_name"
 

@@ -43,7 +43,7 @@ jobs:
         GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
         GITEA_OWNER: ${{ secrets.GITEA_OWNER }}
         VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
-        BASE_DIR: "$HOME/ghorg/repos"
+        BASE_DIR: "repos"
 
     - name: Backup to GitLab
       if: env.BACKUP_GITLAB == 'true'
@@ -54,7 +54,7 @@ jobs:
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         GITLAB_OWNER: ${{ secrets.GITLAB_OWNER }}
         VISIBILITY: ${{ secrets.VISIBILITY || 'private' }}
-        BASE_DIR: "$HOME/ghorg/repos"
+        BASE_DIR: "repos"
 
     - name: Notify completion
       run: |
