@@ -25,9 +25,10 @@ for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
   fi
 
   # 创建 Gitea 远程仓库
+  # 首先尝试创建个人仓库
   echo "Creating repository $repo_name on Gitea..."
   create_repo_response=$(curl -s -o /dev/null -w "%{http_code}" \
-    -X POST "https://${GITEA_HOST}/api/v1/orgs/${GITEA_OWNER}/repos" \
+    -X POST "https://${GITEA_HOST}/api/v1/user/repos" \
     -H "Authorization: token ${GITEA_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{
@@ -39,6 +40,26 @@ for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
   # 检查 API 响应状态码
   if [[ "$create_repo_response" -eq 409 ]]; then
     echo "⚠️  Repository $repo_name already exists on Gitea, skipping creation."
+  elif [[ "$create_repo_response" -eq 403 ]]; then
+    echo "⚠️  Permission denied, trying to create as organization..."
+    # 尝试作为组织仓库创建
+    create_org_response=$(curl -s -o /dev/null -w "%{http_code}" \
+      -X POST "https://${GITEA_HOST}/api/v1/orgs/${GITEA_OWNER}/repos" \
+      -H "Authorization: token ${GITEA_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d "{
+            \"name\": \"${repo_name}\",
+            \"private\": $( [[ "${VISIBILITY}" == "private" ]] && echo true || echo false ),
+            \"autoinit\": false
+          }")
+    if [[ "$create_org_response" -eq 201 ]]; then
+      echo "✅ Repository $repo_name successfully created on Gitea organization."
+    elif [[ "$create_org_response" -eq 409 ]]; then
+      echo "⚠️  Repository $repo_name already exists on Gitea organization, skipping creation."
+    else
+      echo "❌ Error: Failed to create repository $repo_name on Gitea organization. HTTP status code: $create_org_response"
+      continue
+    fi
   elif [[ "$create_repo_response" -ne 201 ]]; then
     echo "❌ Error: Failed to create repository $repo_name on Gitea. HTTP status code: $create_repo_response"
     continue
