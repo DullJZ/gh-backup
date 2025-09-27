@@ -40,7 +40,7 @@ jobs:
     - name: Backup to Gitea
       if: env.BACKUP_GITEA == 'true'
       run: |
-        ../backup-to-gitea.sh
+        bash ${GITHUB_WORKSPACE}/backup-to-gitea.sh
       env:
         GITEA_HOST: ${{ secrets.GITEA_HOST }}
         GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
     - name: Backup to GitLab
       if: env.BACKUP_GITLAB == 'true'
       run: |
-        ../backup-to-gitlab.sh
+        bash ${GITHUB_WORKSPACE}/backup-to-gitlab.sh
       env:
         GITLAB_HOST: ${{ secrets.GITLAB_HOST }}
         GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
