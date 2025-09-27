@@ -30,6 +30,7 @@ jobs:
       run: |
         git config --global user.email "github-actions@github.com"
         git config --global user.name "GitHub Actions"
+        git config --global http.postBuffer 524288000
 
     - name: Clone all GitHub repositories with action's token
       if: ${{ env.CUSTOM_GITHUB_TOKEN == '' }}
