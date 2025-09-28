@@ -77,10 +77,34 @@ for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
     git remote add gitea "$git_url"
   fi
 
+  # 推送所有分支和标签到 Gitea的函数，包含重试机制
+  push_with_retry() {
+    local remote=$1
+    local args=$2
+    local max_retries=3
+    local retry_count=0
+
+    while [ $retry_count -lt $max_retries ]; do
+      if git push $remote $args; then
+        echo "✅ Successfully pushed $args to $remote"
+        return 0
+      else
+        retry_count=$((retry_count + 1))
+        if [ $retry_count -lt $max_retries ]; then
+          echo "⚠️ Push failed, retrying in 5 seconds... (Attempt $retry_count/$max_retries)"
+          sleep 5
+        else
+          echo "❌ Failed to push $args to $remote after $max_retries attempts"
+          return 1
+        fi
+      fi
+    done
+  }
+
   # 推送所有分支和标签到 Gitea
   echo "Pushing local branches to Gitea for $repo_name..."
-  git push gitea --all --force
-  git push gitea --tags --force
+  push_with_retry gitea "--all --force"
+  push_with_retry gitea "--tags --force"
 
   echo "✅ Successfully pushed $repo_name to Gitea."
   cd ..
