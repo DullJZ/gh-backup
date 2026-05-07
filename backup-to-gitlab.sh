@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+# 不使用 set -e，以便在错误时继续处理下一个仓库
 set -o pipefail
 
 # 从环境变量读取配置
@@ -54,16 +54,17 @@ for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
     local retry_count=0
 
     while [ $retry_count -lt $max_retries ]; do
-      if git push $remote $args; then
+      if git push $remote $args 2>&1; then
         echo "✅ Successfully pushed $args to $remote"
         return 0
       else
+        local push_exit_code=$?
         retry_count=$((retry_count + 1))
         if [ $retry_count -lt $max_retries ]; then
-          echo "⚠️ Push failed, retrying in 5 seconds... (Attempt $retry_count/$max_retries)"
+          echo "⚠️ Push failed (exit code: $push_exit_code), retrying in 5 seconds... (Attempt $retry_count/$max_retries)"
           sleep 5
         else
-          echo "❌ Failed to push $args to $remote after $max_retries attempts"
+          echo "⚠️ Failed to push $args to $remote after $max_retries attempts (exit code: $push_exit_code), continuing to next repository"
           return 1
         fi
       fi
@@ -72,10 +73,16 @@ for repo in "$HOME/ghorg/${BASE_DIR}"/*/; do
 
   echo "Pushing local branches to GitLab for $repo_name..."
   push_with_retry gitlab "--all --force"
-  push_with_retry gitlab "--tags --force"
+  if [ $? -eq 0 ]; then
+    push_with_retry gitlab "--tags --force"
+  fi
 
-  echo "✅ Successfully pushed $repo_name to GitLab."
-  cd ..
+  if [ $? -eq 0 ]; then
+    echo "✅ Successfully pushed $repo_name to GitLab."
+  else
+    echo "⚠️ Skipped pushing some branches/tags for $repo_name due to errors, continuing to next repository."
+  fi
+  cd .. || true
 done
 
 echo "🎉 All repositories have been processed."
